@@ -7,14 +7,12 @@
 #include <sys/types.h>
 
 int main(int argc, char *argv[]) {
-    //lines 10-20 follow the same format of code as in Beej's guide
     int sockfd;
     struct sockaddr_in my_addr;
     struct sockaddr_storage their_addr;
     char buf[100];
-    char yes[3] = "yes";
-    char no[2] = "no";
-
+    char yes[4] = "yes\0";
+    char no[3] = "no\0";
     socklen_t addr_len;
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -26,13 +24,13 @@ int main(int argc, char *argv[]) {
 
     int bind_check = bind(sockfd , (struct sockaddr *)&my_addr, sizeof my_addr);
 
-    addr_len = sizeof their_addr;
-    recvfrom(sockfd, buf, 99, 0, (struct sockaddr *)&their_addr, &addr_len);
-
-    if(buf == "ftp"){
-        sendto(sockfd, yes, sizeof yes, 0, (struct sockaddr *)&their_addr, sizeof their_addr);
-    } else {
-        sendto(sockfd, no, sizeof no, 0, (struct sockaddr *)&their_addr, sizeof their_addr);
+    addr_len = sizeof (struct sockaddr_storage);
+    recvfrom(sockfd, buf, sizeof buf, 0, (struct sockaddr *)&their_addr, &addr_len);
+ 
+    if(strcmp(buf, "ftp") == 0){
+        sendto(sockfd, yes, strlen(yes), 0, (struct sockaddr *)&their_addr, sizeof their_addr);
+    } else {  
+        sendto(sockfd, no, strlen(no), 0, (struct sockaddr *)&their_addr, sizeof their_addr);
     }
 
     return 0;
