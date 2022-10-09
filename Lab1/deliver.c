@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <time.h>
 
 int main(int argc, char *argv[]) {
     int sockfd;
@@ -15,6 +16,9 @@ int main(int argc, char *argv[]) {
     char file[100];
     char buf[100];
     socklen_t addr_len;
+
+    int t1 = 0;
+    int t2 = 0;
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -27,6 +31,8 @@ int main(int argc, char *argv[]) {
     scanf("%s%s", ftp, file);
 
     if(access(file,F_OK) == 0) {
+        t1 = clock();
+        printf("Start time: %d clock ticks\n", t1);
         sendto(sockfd, ftp, strlen(ftp), 0, (struct sockaddr *)&server_addr, sizeof server_addr);
     } else {
         return 0;
@@ -34,6 +40,10 @@ int main(int argc, char *argv[]) {
 
     addr_len = sizeof their_addr;
     recvfrom(sockfd, buf, sizeof buf, 0, (struct sockaddr *)&their_addr, &addr_len);
+    
+    t2 = clock();
+    printf("End time: %d clock ticks\n", t2);
+    printf("Round-trip time is: %fs\n", (double)(t2-t1)/CLOCKS_PER_SEC);
 
     if(strcmp(buf, "yes") == 0) {
         printf("A file transfer can start.\n");
